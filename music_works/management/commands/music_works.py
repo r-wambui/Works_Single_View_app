@@ -2,7 +2,7 @@ import csv
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
-from music_works.models import MusicWorks
+from music_works.models import Contributor, MusicWorks
 
 
 class Command(BaseCommand):
@@ -13,21 +13,32 @@ class Command(BaseCommand):
             music_metadata = csv.DictReader(music_file)
             for row in music_metadata:
                 if row["iswc"]:
-                    music_object, created = MusicWorks.objects.get_or_create(
-                                        iswc=row["iswc"],
-                                        defaults={"title": row["title"],
-                                                "contributors": row["contributors"].split("|")})
-                    if not created:
-                        music_object.contributors = list(set().union(
-                                            music_object.contributors,
-                                            row["contributors"].split("|")))
-                        music_object.save()
+                    query_iswc = MusicWorks.objects.filter(
+                        iswc=row["iswc"]).first()
+                    if not query_iswc:
+                        music_work = MusicWorks.objects.create(
+                            iswc=row["iswc"], title=row["title"])
 
+                        # get or create, then add contributors to the music object
+                        self.get_or_create_contributor(
+                            row["contributors"].split("|"), music_work)
+
+                    if query_iswc:
+                        self.get_or_create_contributor(
+                            row["contributors"].split("|"), query_iswc)
                 else:
+                    row_contributors = Contributor.objects.filter(
+                        contributor__in=row["contributors"].split("|"))
                     search_query = MusicWorks.objects.filter(Q(title=row["title"]) & Q(
-                        contributors__overlap=row["contributors"].split("|"))).first()
+                        contributors__in=row_contributors)).first()
                     if search_query:
-                        search_query.contributors = list(set().union(
-                            search_query.contributors,
-                            row["contributors"].split("|")))
-                        search_query.save()
+                        self.get_or_create_contributor(
+                            row["contributors"].split("|"), search_query)
+
+    @ staticmethod
+    def get_or_create_contributor(music_contributors, query):
+        # create and update existing title contributors
+        for contributor in music_contributors:
+            contributor, _ = Contributor.objects.get_or_create(
+                contributor=contributor)
+            query.contributors.add(contributor)
