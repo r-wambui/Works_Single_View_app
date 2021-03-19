@@ -11,6 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with open("data/works_metadata.csv") as music_file:
             music_metadata = csv.DictReader(music_file)
+            no_iswc = []
             for row in music_metadata:
                 if row["iswc"]:
                     query_iswc = MusicWorks.objects.filter(
@@ -27,18 +28,24 @@ class Command(BaseCommand):
                         self.get_or_create_contributor(
                             row["contributors"].split("|"), query_iswc)
                 else:
-                    row_contributors = Contributor.objects.filter(
-                        contributor__in=row["contributors"].split("|"))
-                    search_query = MusicWorks.objects.filter(Q(title=row["title"]) & Q(
-                        contributors__in=row_contributors)).first()
-                    if search_query:
-                        self.get_or_create_contributor(
-                            row["contributors"].split("|"), search_query)
+                    no_iswc.append(row)
 
-    @ staticmethod
-    def get_or_create_contributor(music_contributors, query):
+            for row in no_iswc:
+                self.check_by_title_contributor(row)
+
+    def check_by_title_contributor(self, row):
+        row_contributors = Contributor.objects.filter(
+            contributor__in=row["contributors"].split("|"))
+        search_query = MusicWorks.objects.filter(Q(title=row["title"]) & Q(
+            contributors__in=row_contributors)).first()
+        if search_query:
+            self.get_or_create_contributor(
+                row["contributors"].split("|"), search_query)
+
+    def get_or_create_contributor(self, music_contributors, query):
         # create and update existing title contributors
         for contributor in music_contributors:
             contributor, _ = Contributor.objects.get_or_create(
                 contributor=contributor)
-            query.contributors.add(contributor)
+            if contributor not in query.contributors.all():
+                query.contributors.add(contributor)
