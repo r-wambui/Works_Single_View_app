@@ -1,0 +1,36 @@
+version: "3.8"
+   
+services:
+  db:
+    container_name: db
+    image: postgres
+    volumes:
+      - data-db-volume:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=works_metadata_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5433:5432"
+
+  web:
+    container_name: web
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - .:/Works_Single_View 
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    privileged: true
+    tty: true
+    stdin_open: true
+    restart: "always"
+    env_file:
+      - .env
+
+volumes: 
+  data-db-volume:
+    external: true
