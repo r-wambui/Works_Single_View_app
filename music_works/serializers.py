@@ -1,8 +1,11 @@
 from rest_framework import serializers
 
-from music_works import models
+from music_works.models import MusicWorks
+
 
 class MusicWorkSerializer(serializers.ModelSerializer):
+    contributors = serializers.StringRelatedField(many=True)
+
     class Meta:
-        model = models.MusicWorks
-        fields = '__all__'
+        model = MusicWorks
+        fields = ['id', 'iswc', 'title', 'contributors']
