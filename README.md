@@ -78,7 +78,24 @@ export PORT='5432'
 ```
 
 ### API endpoint
-Get music metadata by `iswc`. After running Part 2 above. You can use the endpoint on browser or postman to see the response
-endpoint: `http://127.0.0.1:8000/api/v1/musicworks/<str:iswc>`
+Get music metadata by `iswc`. After running Part 2 above. You can use the endpoint on browser or postman to get the response.
+
+endpoint:
+`http://127.0.0.1:8000/api/v1/musicworks/<str:iswc>`
+
+```json
+{
+    "id": 2,
+    "iswc": "T0101974597",
+    "title": "Adventure of a Lifetime",
+    "contributors": [
+        "O Brien Edward John",
+        "Yorke Thomas Edward",
+        "Greenwood Colin Charles",
+        "Selway Philip James"
+    ]
+}
+
+```
 
 
