@@ -8,8 +8,16 @@ from music_works.models import Contributor, MusicWorks
 class Command(BaseCommand):
     help = "Import music metadata csv"
 
+    def add_arguments(self, parser):
+        parser.add_argument("--csv-path", help="csv path", type=str
+                            )
+
     def handle(self, *args, **options):
-        with open("data/works_metadata.csv") as music_file:
+        path = "data/works_metadata.csv"
+        if options["csv_path"]:
+            path = options["csv_path"]
+
+        with open(path) as music_file:
             music_metadata = csv.DictReader(music_file)
             no_iswc = []
             for row in music_metadata:
