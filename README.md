@@ -83,6 +83,10 @@ Get music metadata by `iswc`. After running Part 2 above. You can use the endpoi
 endpoint:
 `http://127.0.0.1:8000/api/v1/musicworks/<str:iswc>`
 
+For Docker:
+endpoint:
+`http://0.0.0.0:8000/api/v1/musicworks/<str:iswc>`
+
 ```json
 {
     "id": 2,
